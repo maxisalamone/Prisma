@@ -148,7 +148,9 @@ function search_in_csv_file () {
 					# Separado usando archivos temporales y la opcion slurpfile para el caso de kafka ya que la lista de argumentos
 					# es demasiado larga, de manera de no alterar otros flujos
 					if [ "$AWS_METRICTYPE" == "Kafka" ]; then
-							echo "$DIMENSIONS" > /tmp/dimensions.json
+	                                                #trunca DIMENSIONS ya que es demasiado extenso (miles de elementos) deja solo 5 primeros
+	                                                echo "$DIMENSIONS" | awk '{for (i=1; i<=10; i++) printf "%s ", $i; print ""}' > /tmp/dimensions.json
+	                                                truncate -s -1 /tmp/dimensions.json && echo '", "{#AWSMETRICTYPE}": "Kafka" }' >> /tmp/dimensions.json
 							echo "$ZBXGROUPTAGS" > /tmp/zbxgrouptags.json
 							REDISRESULTADO=$(jq --slurpfile dimensions /tmp/dimensions.json '. |= . + $dimensions[0]' <<< "$REDISRESULTADO")
 							REDISRESULTADO=$(jq --slurpfile zbxgrouptags /tmp/zbxgrouptags.json '. |= . + $zbxgrouptags[0]' <<< "$REDISRESULTADO")
